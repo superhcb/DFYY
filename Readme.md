@@ -1,0 +1,14 @@
+文件说明：
+data：数据表格
+output：结果输出
+data_process.py：数据处理，生成二分类/四分类
+decision_tree_search_gpt.py：对“决策树+PCA”进行网格搜索，GPT生成的
+decision_tree_search.py：对最优“决策树+PCA”模型进行指标评估
+decision_tree_test.py：无用
+decision_tree.py：默认参数，决策树性能粗评估
+knn.py：KNN性能粗评估
+model.py：神经网络的模型定义
+rf.py：随机森林性能粗评估
+svm.py：SVM性能粗评估
+train.py：神经网络模型训练
+utils.py：数据处理，数据可视化，数据保存

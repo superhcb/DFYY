@@ -1,4 +1,4 @@
-from utils import calculate_metrics, load_and_preprocess_data
+from utils import calculate_metrics, load_and_preprocess_data, plot_roc_curve, plot_confusion_matrix, plot_feature_importance
 from sklearn.preprocessing import StandardScaler
 import numpy as np
 from sklearn.model_selection import train_test_split
@@ -11,7 +11,7 @@ def train_decision_tree_with_pca():
     使用PCA降维和决策树训练模型
     """
     # 加载数据
-    X, y = load_and_preprocess_data()
+    X, y, feature_names = load_and_preprocess_data()
     
     print(f"原始数据形状: X={X.shape}, y={y.shape}")
     print(f"标签分布: {np.bincount(y)}")
@@ -27,7 +27,8 @@ def train_decision_tree_with_pca():
 
     print(f"训练集形状: X_train={X_train.shape}, y_train={y_train.shape}")
     print(f"测试集形状: X_test={X_test.shape}, y_test={y_test.shape}")
-
+    print(f"训练集标签分布: {np.bincount(y_train)}")
+    print(f"测试集标签分布: {np.bincount(y_test)}")
     
     # 使用PCA进行降维
     # 保留95%的方差信息
@@ -61,6 +62,10 @@ def train_decision_tree_with_pca():
     # 预测
     y_train_pred = dt_model.predict(X_train_pca)
     y_test_pred = dt_model.predict(X_test_pca)
+
+    # 获取预测概率（用于ROC曲线）
+    y_train_proba = dt_model.predict_proba(X_train_pca)[:, 1]
+    y_test_proba = dt_model.predict_proba(X_test_pca)[:, 1]
     
     # 计算指标
     train_accuracy = accuracy_score(y_train, y_train_pred)
@@ -75,6 +80,20 @@ def train_decision_tree_with_pca():
     print(f"测试集敏感性: {test_sensitivity:.4f}")
     print(f"测试集特异性: {test_specificity:.4f}")
     print(f"测试集约登指数: {test_ydindex:.4f}")
+
+    # 绘制ROC曲线
+    auc_score = plot_roc_curve(y_test, y_test_proba, title="Decision Tree ROC Curve")
+    print(f"测试集AUC值: {auc_score:.4f}")
+
+    # 显示混淆矩阵
+    plot_confusion_matrix(y_test, y_test_pred, title="Decision Tree Confusion Matrix")
+
+    # 显示特征重要性 (注意：这是PCA变换后的特征重要性)
+    plot_feature_importance(dt_model.feature_importances_, top_n=10, title="Top 10 Principal Components Importance")
+    print("\n主成分重要性 (前10个):")
+    indices = np.argsort(dt_model.feature_importances_)[::-1]
+    for i in range(min(10, len(dt_model.feature_importances_))):
+        print(f"{i+1}. PC {indices[i]}: {dt_model.feature_importances_[indices[i]]:.4f}")
     
     return dt_model, pca, scaler
 
